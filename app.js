@@ -16,10 +16,16 @@ const showRelatedStreets = (name) => {
     .then(data => data.streets)
     .then((streets) => {
       streetsResultSection.innerHTML="";
-      streets.forEach((street) => {
+      
+      if(streets.length !== 0) {
+        streets.forEach((street) => {
+          streetsResultSection.insertAdjacentHTML('beforeend', 
+          `<a href="#" data-street-key="${street.key}">${street.name}</a>`)
+        })
+      } else {
         streetsResultSection.insertAdjacentHTML('beforeend', 
-        `<a href="#" data-street-key="${street.key}">${street.name}</a>`)
-      })
+        `<div class="no-results">No results found</div>`)
+      }
     });
 }
 
