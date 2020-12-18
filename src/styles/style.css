@@ -25,6 +25,10 @@ aside {
   margin: 20px 0;
 }
 
+main p {
+  text-align: center;
+}
+
 main {
   background-color: #f6f7fb;  
 }

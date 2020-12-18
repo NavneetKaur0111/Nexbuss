@@ -3,6 +3,7 @@ const inputForm = document.querySelector('form');
 const streetNameBox = document.querySelector('#street-name');
 const streetsResultSection = document.querySelector('.streets');
 const schedulebusessection = document.querySelector('tbody');
+const mainParagraphSection = document.querySelector('main p');
 const baseUrl = 'https://api.winnipegtransit.com/v3/';
 const apiKey = 'api-key=5VCDsFRAs7Mgh62H8dNp';
 
@@ -49,27 +50,31 @@ const findStopKeys = (streetKey) => {
 }
 
 const getScheduleBusesData = (stopsList) => {
-  stopsList.forEach(stop => {
-    const routes = stop['route-schedules'];
+  if(stopsList.length === 0 ) {
+    mainParagraphSection.innerHTML = `no bus route`;
+  } else {
+    console.log(stopsList)
+    stopsList.forEach(stop => {
+      const routes = stop['route-schedules'];
 
-    routes.forEach(route => {
-      const nextBuses = route['scheduled-stops'];
+      routes.forEach(route => {
+        const nextBuses = route['scheduled-stops'];
 
-      nextBuses.forEach(bus => {
-        let arrivalTime = new Date(bus.times.arrival.scheduled);
-         const busData = {
-          name : stop.stop.street.name,
-          crossStName : stop.stop["cross-street"].name,
-          direction : stop.stop.direction,
-          busId : route.route.key,
-          busTime: dayjs(arrivalTime).format('hh:mm A'),
-        }
-         showScheduleBuses(busData);
-      })   
+        nextBuses.forEach(bus => {
+          let arrivalTime = new Date(bus.times.arrival.scheduled);
+          const busData = {
+            name : stop.stop.street.name,
+            crossStName : stop.stop["cross-street"].name,
+            direction : stop.stop.direction,
+            busId : route.route.key,
+            busTime: dayjs(arrivalTime).format('hh:mm A'),
+          }
+          showScheduleBuses(busData);
+        })   
+      })
     })
+  }
 
-
-  })
 }
 
 const showScheduleBuses = (busData) => {
@@ -109,6 +114,7 @@ streetsResultSection.addEventListener('click', (event) => {
   if(event.target.nodeName === 'A') {
     streetNameBox.innerHTML = `Displaying results for ${event.target.innerHTML}`
     schedulebusessection.innerHTML = '';
+    mainParagraphSection.innerHTML = "";
     findStopRoutes(event.target.dataset.streetKey)
   }
 })
