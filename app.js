@@ -56,13 +56,13 @@ const getScheduleBusesData = (stopsList) => {
       const nextBuses = route['scheduled-stops'];
 
       nextBuses.forEach(bus => {
-        let date = new Date(bus.times.arrival.scheduled);
+        let arrivalTime = new Date(bus.times.arrival.scheduled);
          const busData = {
           name : stop.stop.street.name,
           crossStName : stop.stop["cross-street"].name,
           direction : stop.stop.direction,
           busId : route.route.key,
-          busTime: `${date.getHours()%12 < 10 ? '0' : ''}${date.getHours() % 12}:${date.getMinutes()} ${date.getHours() < 12 ? "AM" : "PM" }`
+          busTime: dayjs(arrivalTime).format('hh:mm A'),
         }
          showScheduleBuses(busData);
       })   
