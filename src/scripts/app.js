@@ -13,37 +13,33 @@ const findRelatedStreets = (name) => {
   ).then((data) => data.json());
 };
 
+const printStreetName = (street) => {
+  streetsResultSection.insertAdjacentHTML(
+    "beforeend",
+    `<a href="#" data-street-key="${street.key}">${street.name}</a>`
+  );
+}
+
+const notifyNoResults = () => {
+  streetsResultSection.insertAdjacentHTML(
+    "beforeend",
+    `<div class="no-results">No results found</div>`
+  );
+}
+
 const showRelatedStreets = (name) => {
   findRelatedStreets(name)
     .then((data) => data.streets)
     .then((streets) => {
       streetsResultSection.innerHTML = "";
-
       if (streets.length !== 0) {
         streets.forEach((street) => {
-          streetsResultSection.insertAdjacentHTML(
-            "beforeend",
-            `<a href="#" data-street-key="${street.key}">${street.name}</a>`
-          );
+          printStreetName(street);
         });
       } else {
-        streetsResultSection.insertAdjacentHTML(
-          "beforeend",
-          `<div class="no-results">No results found</div>`
-        );
+         notifyNoResults();
       }
     });
-};
-
-const getstopsList = (keys) => {
-  const stopsList = keys.map((key) => {
-    return fetch(
-      `${baseUrl}stops/${key}/schedule.json?${apiKey}&max-results-per-route=2`
-    )
-      .then((data) => data.json())
-      .then((data) => data["stop-schedule"]);
-  });
-  return stopsList;
 };
 
 const findStopKeys = (streetKey) => {
@@ -56,36 +52,13 @@ const findStopKeys = (streetKey) => {
     });
 };
 
-const getScheduleBusesData = (stopsList) => {
-  if (stopsList.length === 0) {
-    mainParagraphSection.innerHTML = `no bus route`;
-  } else {
-    stopsList.forEach((stop) => {
-      const routes = stop["route-schedules"];
-
-      if (routes.length !== 0) {
-        routes.forEach((route) => {
-          const nextBuses = route["scheduled-stops"];
-
-          if (nextBuses.length !== 0) {
-            nextBuses.forEach((bus) => {
-              if (bus.times.arrival !== undefined) {
-                let arrivalTime = new Date(bus.times.arrival.scheduled);
-                const busData = {
-                  name: stop.stop.street.name,
-                  crossStName: stop.stop["cross-street"].name,
-                  direction: stop.stop.direction,
-                  busId: route.route.key,
-                  busTime: dayjs(arrivalTime).format("hh:mm A"),
-                };
-                showScheduleBuses(busData);
-              }
-            });
-          }
-        });
-      }
-    });
-  }
+const getstopsList = (keys) => {
+  const stopsList = keys.map((key) => {
+    return fetch(`${baseUrl}stops/${key}/schedule.json?${apiKey}&max-results-per-route=2`)
+      .then((data) => data.json())
+      .then((data) => data["stop-schedule"]);
+  });
+  return stopsList;
 };
 
 const showScheduleBuses = (busData) => {
@@ -101,14 +74,53 @@ const showScheduleBuses = (busData) => {
   );
 };
 
-const findStopRoutes = (streetKey) => {
+const getBusData = (bus,stop,route) => {
+  if (bus.times.arrival !== undefined) {
+    let arrivalTime = new Date(bus.times.arrival.scheduled);
+    const busData = {
+      name: stop.stop.street.name,
+      crossStName: stop.stop["cross-street"].name,
+      direction: stop.stop.direction,
+      busId: route.route.key,
+      busTime: dayjs(arrivalTime).format("hh:mm A"),
+    };
+    showScheduleBuses(busData);
+  }
+}
+
+const getRoutesData = (stop, routes) => {
+  if (routes.length !== 0) {
+    routes.forEach((route) => {
+      const nextBuses = route["scheduled-stops"];
+
+      if (nextBuses.length !== 0) {
+        nextBuses.forEach((bus) => {
+          getBusData(bus,stop,route)
+        });
+      }
+    });
+  }
+}
+
+const printScheduledBuses = (stopsList) => {
+  if (stopsList.length === 0) {
+    mainParagraphSection.innerHTML = `no bus route`;
+  } else {
+    stopsList.forEach((stop) => {
+      const routes = stop["route-schedules"];
+      getRoutesData(stop, routes);
+    });
+  }
+};
+
+const printBusRoutes = (streetKey) => {
   findStopKeys(streetKey)
     .then((stopKeys) => {
       return getstopsList(stopKeys);
     })
     .then((stopsList) => {
       Promise.all(stopsList).then((stopsList) =>
-        getScheduleBusesData(stopsList)
+        printScheduledBuses(stopsList)
       );
     });
 };
@@ -129,6 +141,6 @@ streetsResultSection.addEventListener("click", (event) => {
     streetNameBox.innerHTML = `Displaying results for ${event.target.innerHTML}`;
     schedulebusessection.innerHTML = "";
     mainParagraphSection.innerHTML = "";
-    findStopRoutes(event.target.dataset.streetKey);
+    printBusRoutes(event.target.dataset.streetKey);
   }
 });
