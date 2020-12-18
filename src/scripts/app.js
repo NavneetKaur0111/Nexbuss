@@ -98,6 +98,7 @@ inputForm.addEventListener('submit', (event) => {
   event.preventDefault();
   if (event.target.nodeName === 'FORM') {
     streetsResultSection.innerHTML = '';
+    streetNameBox.innerHTML = '';
     schedulebusessection.innerHTML = '';
     showRelatedStreets(searchbarInput.value);
     searchbarInput.value= '';
