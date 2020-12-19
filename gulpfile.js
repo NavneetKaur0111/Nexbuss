@@ -3,7 +3,8 @@ const del = require('del');
 const concat = require('gulp-concat');
 const csso = require('gulp-csso');
 const uglify = require('gulp-uglify-es').default;
-var sourcemaps = require('gulp-sourcemaps');
+const sourcemaps = require('gulp-sourcemaps');
+const surge = require('gulp-surge');
 
 function cleanTask() {
   return del('dist/');
@@ -32,8 +33,16 @@ function scriptTask() {
     .pipe(dest('dist/scripts/'));
 }
 
+function deployTask () {
+  return surge({
+    project: './dist',
+    domain: 'Nexbuss.surge.sh'
+  })
+}
+
 exports.clean = cleanTask;
 exports.html = htmlTask;
 exports.styles = stylesTask;
 exports.scripts = scriptTask;
+exports.deploy = deployTask;
 exports.default = series( cleanTask, parallel(htmlTask, stylesTask, scriptTask));
