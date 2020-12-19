@@ -36,7 +36,7 @@ function scriptTask() {
 function deployTask () {
   return surge({
     project: './dist',
-    domain: 'Nexbuss.surge.sh'
+    domain: 'https://nexbuss.surge.sh'
   })
 }
 
